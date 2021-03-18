@@ -1,5 +1,5 @@
 /*
-CSC3916 HW3
+CSC3916 HW4
 File: Server.js
 Description: Web API scaffolding for Movie API
  */
@@ -12,6 +12,7 @@ var jwt = require('jsonwebtoken');
 var cors = require('cors');
 var User = require('./Users');
 var Movie = require('./Movies');
+var Review = require('./reviews');
 
 var app = express();
 app.use(cors());
@@ -21,24 +22,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
 var router = express.Router();
-
-function getJSONObjectForMovieRequirement(req) {
-    var json = {
-        headers: "No headers",
-        key: process.env.UNIQUE_KEY,
-        body: "No body"
-    };
-
-    if (req.body != null) {
-        json.body = req.body;
-    }
-
-    if (req.headers != null) {
-        json.headers = req.headers;
-    }
-
-    return json;
-}
 
 router.route('/signup')
     .post(function(req, res) {
@@ -127,10 +110,10 @@ router.route('/movies')
     }
     )
     .get(authJwtController.isAuthenticated, function (req, res) {
-        if (!req.body){
+        if (!req.body.title){
             res.json({success:false, message: "Provide a movie to display"});
         }else{
-            Movie.find(req.body).select("title year_released genre actors").exec(function(err, movie) {
+            Movie.find(req.body.title).select("title year_released genre actors").exec(function(err, movie) {
                 if (err) {
                     res.status(403).json({success: false, message: "Unable to find movie"});
                 }
@@ -173,6 +156,63 @@ router.route('/movies')
         res.json({success: false, msg: "This HTTP method is not supported."});
 
     });
+
+router.route('/reviews')
+    .post(authJwtController.isAuthenticated, function (req, res) {
+        if(!req.body.title || !req.body.username || !req.body.comment || !req.body.rating){
+            res.json({success: false, message : "Movie Title, Username, Comment, and Rating Required"});
+        }else{
+
+            var review = new Review();
+
+            review.title = req.body.title;
+            review.username = req.body.username;
+            review.comment = req.body.comment;
+            review.rating = req.body.rating;
+
+            review.save(function (err) {
+                if (err) {
+                    return res.json(err);
+                }
+            })
+            res.json({success: true, message: "Review Saved"});
+
+        }
+    })
+    .get(function (req, res){
+        if(!req.body.title){
+            res.json({success: false, message: "Provide a movie to display"});
+        }else if(req.query.reviews == "true"){
+            Movie.aggregate([
+                {
+                    $lookup : {
+                        from : "reviews",
+                        localField : "title",
+                        foreignField : "title",
+                        as: "MovieReview"
+                    }
+                },
+                {
+                    $addFields: {
+                        AverageReviews : {$avg: "$MovieReview.rating"}
+                    }
+                }
+            ]).exec(function(err, movie){
+                if(err){
+                    return res.json(err);
+                }else{
+                    return res.json(movie);
+                }
+            })
+        }else {
+            Movie.find(req.body.title).select("title year_released genre actors").exec(function(err, movie) {
+                if (err) {
+                   return res.status(404).json({success: false, message: "Unable to find movie"});
+                }
+
+            })
+        }
+    })
 
 router.all('/', function (req, res) {
     res.json({success: false, msg: 'This route is not supported.'});

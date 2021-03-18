@@ -1,24 +1,24 @@
 {
-  "name": "csc3916_hw3",
+  "name": "csc3916_hw4",
   "version": "1.0.0",
-  "description": "Web API 3916 Homework 3",
+  "description": "Web API 3916 Homework 4",
   "main": "server.js",
   "scripts": {
     "test": "mocha --timeout 20000 --exit"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/smebellis/CSC3916_HW3.git"
+    "url": "git+https://github.com/smebellis/CSC3916_HW04.git"
   },
   "keywords": [
     "Movie"
   ],
-  "author": "Shawn McCarthy",
+  "author": "Ryan Ellis",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/smebellis/CSC3916_HW3/issues"
+    "url": "https://github.com/smebellis/CSC3916_HW04/issues"
   },
-  "homepage": "https://github.com/smebellis/CSC3916_HW3#readme",
+  "homepage": "https://github.com/smebellis/CSC3916_HW04#readme",
   "dependencies": {
     "bcrypt-nodejs": "^0.0.3",
     "body-parser": "^1.19.0",
