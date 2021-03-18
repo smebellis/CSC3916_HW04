@@ -201,6 +201,9 @@ router.route('/reviews')
                 } else {
                     Movie.aggregate([
                         {
+                          $match : {title: req.body.title}
+                        },
+                        {
                             $lookup: {
                                 from: "reviews",
                                 localField: "title",
