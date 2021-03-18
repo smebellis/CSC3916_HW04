@@ -231,6 +231,8 @@ router.route('/reviews')
             Movie.find({title: req.body.title}).select("title year_released genre actors").exec(function (err, movie) {
                 if (err) {
                     return res.status(404).json({success: false, message: "Unable to find movie"});
+                }else if (!movie) {
+                        return res.status(403).json({success: false, message: "Movie Does Not Exist"});
                 }else {
                     return res.status(200).json({success: true, message: "Found Movie", Movie: movie})
                 }
