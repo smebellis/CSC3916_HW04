@@ -165,17 +165,27 @@ router.route('/reviews')
 
             var review = new Review();
 
-            review.title = req.body.title;
-            review.username = req.body.username;
-            review.comment = req.body.comment;
-            review.rating = req.body.rating;
+            Movie.findOne({title: req.body.title}, function(err, movie){
+                if(err) {
+                    return res.status(403).json({success: false, message: "Can not Post Review"});
+                }else if(!movie){
+                    return res.status(403).json({success: false, message: "Movie Does Not exist"});
+                }else{
+                    review.title = req.body.title;
+                    review.username = req.body.username;
+                    review.comment = req.body.comment;
+                    review.rating = req.body.rating;
 
-            review.save(function (err) {
-                if (err) {
-                    return res.json(err);
+                    review.save(function (err) {
+                        if (err) {
+                            return res.json(err);
+                        }
+                    })
+                    res.json({success: true, message: "Review Saved"});
                 }
+
             })
-            res.json({success: true, message: "Review Saved"});
+
 
         }
     })
@@ -183,35 +193,47 @@ router.route('/reviews')
         if(!req.body.title){
             res.json({success: false, message: "Provide a movie to display"});
         }else if(req.query.reviews == "true"){
-            Movie.aggregate([
-                {
-                    $lookup : {
-                        from : "reviews",
-                        localField : "title",
-                        foreignField : "title",
-                        as: "MovieReview"
-                    }
-                },
-                {
-                    $addFields: {
-                        AverageReviews : {$avg: "$MovieReview.rating"}
-                    }
-                }
-            ]).exec(function(err, movie){
-                if(err){
-                    return res.json(err);
-                }else{
-                    return res.json(movie);
+            Movie.findOne({title : req.body.title}, function(err, movie) {
+                if (err) {
+                    return res.status(404).json({success: false, message: "Unable to find movie"});
+                } else if (!movie) {
+                    return res.status(403).json({success: false, message: "Movie Does Not Exist"})
+                } else {
+                    Movie.aggregate([
+                        {
+                            $lookup: {
+                                from: "reviews",
+                                localField: "title",
+                                foreignField: "title",
+                                as: "MovieReview"
+                            }
+                        },
+                        {
+                            $addFields: {
+                                AverageReviews: {$avg: "$MovieReview.rating"}
+                            }
+                        }
+                    ]).exec(function (err, movie) {
+                        if (err) {
+                            return res.json(err);
+                        } else {
+                            return res.json(movie);
+                        }
+                    })
                 }
             })
-        }else {
-            Movie.find(req.body.title).select("title year_released genre actors").exec(function(err, movie) {
-                if (err) {
-                   return res.status(404).json({success: false, message: "Unable to find movie"});
-                }
 
+        }
+        else {
+            Movie.find({title: req.body.title}).select("title year_released genre actors").exec(function (err, movie) {
+                if (err) {
+                    return res.status(404).json({success: false, message: "Unable to find movie"});
+                }else {
+                    return res.status(200).json({success: true, message: "Found Movie", Movie: movie})
+                }
             })
         }
+
     })
 
 router.all('/', function (req, res) {
