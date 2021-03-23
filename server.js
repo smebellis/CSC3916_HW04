@@ -79,14 +79,14 @@ router.route('/signup')
                         return res.json(err);
                 }
 
-                res.json({success: true, msg: 'Successfully created new user.'});
+                return res.json({success: true, msg: 'Successfully created new user.'});
             });
         }
     })
 
 
     .all(function(req, res){
-        res.json({success: false, msg: 'This HTTP method is not supported.'});
+        return res.json({success: false, msg: 'This HTTP method is not supported.'});
     }
     );
 
@@ -107,7 +107,7 @@ router.route('/signin')
                     res.json({success: true, token: 'JWT ' + token});
 
                 } else {
-                    res.status(401).send({success: false, msg: 'Authentication failed.'});
+                    return res.status(401).send({success: false, msg: 'Authentication failed.'});
                 }
             })
         })
@@ -120,11 +120,11 @@ router.route('/movies')
         }else{
             Movie.findOneAndDelete(req.body.title, function(err, movie) {
                 if(err){
-                    res.status(403).json({success:false, message: "Error can not delete Movie"});
+                    return res.status(403).json({success:false, message: "Error can not delete Movie"});
                 }else if(!movie){
-                    res.status(403).json({success: false, message: "Can not find Movie"});
+                    return res.status(403).json({success: false, message: "Can not find Movie"});
                 }else {
-                    res.status(200).json({success: true, message: "Movie Deleted"});
+                    return res.status(200).json({success: true, message: "Movie Deleted"});
                 }
             })
             }
@@ -137,11 +137,11 @@ router.route('/movies')
         }else{
             Movie.findOneAndUpdate(req.body.title, req.body.update_title, function(err, movie) {
                 if(err){
-                    res.status(403).json({success:false, message: "Can not update Movie"});
+                    return res.status(403).json({success:false, message: "Can not update Movie"});
                 }else if(!movie){
-                    res.status(403).json({success: false, message: "Can not find Movie"});
+                    return res.status(403).json({success: false, message: "Can not find Movie"});
                 }else{
-                    res.status(200).json({success: true, message:"Successfully updated title"});
+                    return res.status(200).json({success: true, message:"Successfully updated title"});
                 }
             });
         }
@@ -153,12 +153,12 @@ router.route('/movies')
         }else{
             Movie.find(req.body.title).select("title year_released genre actors").exec(function(err, movie) {
                 if (err) {
-                    res.status(403).json({success: false, message: "Unable to find movie"});
+                    return res.status(403).json({success: false, message: "Unable to find movie"});
                 }
                 if (movie) {
-                    res.status(200).json({success: true, message: "Found Movie", Movie: movie})
+                    return res.status(200).json({success: true, message: "Found Movie", Movie: movie})
                 } else {
-                    res.status(404).json({success: false, message: "Movie not found"});
+                    return res.status(404).json({success: false, message: "Movie not found"});
 
                 }
             })
@@ -191,14 +191,14 @@ router.route('/movies')
     })
 
     .all(function(req, res){
-        res.json({success: false, msg: "This HTTP method is not supported."});
+        return res.json({success: false, msg: "This HTTP method is not supported."});
 
     });
 
 router.route('/reviews')
     .post(authJwtController.isAuthenticated, function (req, res) {
         if(!req.body.title || !req.body.username || !req.body.comment || !req.body.rating){
-            res.json({success: false, message : "Movie Title, Username, Comment, and Rating Required"});
+            return res.json({success: false, message : "Movie Title, Username, Comment, and Rating Required"});
         }else{
 
             var review = new Review();
@@ -220,7 +220,7 @@ router.route('/reviews')
                         }else{
                             trackDimension(movie.genre, 'Rating', 'Feedback for Movie', review.rating, review.title, "1");
 
-                            res.json({success: true, message: "Review Saved"});
+                            return res.json({success: true, message: "Review Saved"});
                         }
                     })
                 }
