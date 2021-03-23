@@ -135,7 +135,7 @@ router.route('/movies')
         if(!req.body.title || !req.body.update_title){
             res.json({success:false, message: "Provide movie title to update, and new title"});
         }else{
-            Movie.findOneAndUpdate(req.body.title, req.body.update_title, function(err, movie) {
+            Movie.findOneAndUpdate({title: req.body.title}, {update_title: req.body.update_title}, function(err, movie) {
                 if(err){
                     return res.status(403).json({success:false, message: "Can not update Movie"});
                 }else if(!movie){
@@ -151,7 +151,7 @@ router.route('/movies')
         if (!req.body.title){
             res.json({success:false, message: "Provide a movie to display"});
         }else{
-            Movie.find(req.body.title).select("title year_released genre actors").exec(function(err, movie) {
+            Movie.find({title: req.body.title}).select("title year_released genre actors").exec(function(err, movie) {
                 if (err) {
                     return res.status(403).json({success: false, message: "Unable to find movie"});
                 }
