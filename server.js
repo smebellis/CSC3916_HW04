@@ -135,8 +135,8 @@ router.route('/movies')
         if(!req.body.title || !req.body.update_title){
             res.json({success:false, message: "Provide movie title to update, and new title"});
         }else{
-            const filter = {title : req.body.title};
-            const update = {title : req.body.update_title};
+            var filter = {title : req.body.title};
+            var update = {title : req.body.update_title};
             Movie.findOneAndUpdate(filter, update, function(err, movie) {
                 if(err){
                     return res.status(403).json({success:false, message: "Can not update Movie"});
