@@ -118,7 +118,8 @@ router.route('/movies')
         if(!req.body.title){
             res.json({success:false, message: "Provide a movie to delete"});
         }else{
-            Movie.findOneAndDelete(req.body.title, function(err, movie) {
+
+            Movie.findOneAndDelete({title : req.body.title}, function(err, movie) {
                 if(err){
                     return res.status(403).json({success:false, message: "Error can not delete Movie"});
                 }else if(!movie){
