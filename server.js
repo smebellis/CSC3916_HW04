@@ -135,7 +135,9 @@ router.route('/movies')
         if(!req.body.title || !req.body.update_title){
             res.json({success:false, message: "Provide movie title to update, and new title"});
         }else{
-            Movie.findOneAndUpdate({title: req.body.title}, {update_title: req.body.update_title}, function(err, movie) {
+            const filter = {title : req.body.title};
+            const update = {title : req.body.update_title};
+            Movie.findOneAndUpdate(filter, update, function(err, movie) {
                 if(err){
                     return res.status(403).json({success:false, message: "Can not update Movie"});
                 }else if(!movie){
@@ -180,12 +182,14 @@ router.route('/movies')
             movie.save(function (err) {
                 if (err) {
                     if (err.code == 11000)
-                        return res.json({success: false, message: "A user with that username already exists"});
+                        return res.json({success: false, message: "That movie already exists"});
                     else
                         return res.json(err);
+                }else{
+                    res.json({success: true, msg: 'Movie Created.'});
                 }
             })
-            res.json({success: true, msg: 'Movie Created.'});
+
 
         }
     })
