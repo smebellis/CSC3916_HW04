@@ -179,18 +179,21 @@ router.route('/movies')
             movie.genre = req.body.genre;
             movie.actors = req.body.actors;
 
-            movie.save(function (err) {
-                if (err) {
-                    if (err.code == 11000)
-                        return res.json({success: false, message: "That movie already exists"});
-                    else
-                        return res.json(err);
+            Movie.find({title:req.body.title}, function(err, movies){
+                if(err){
+                    return res.json(err);
+                }else if(!movies){
+                    movie.save(function (err) {
+                        if (err) {
+                            return res.json(err);
+                        }else{
+                            res.json({success: true, msg: 'Movie Created.'});
+                        }
+                    })
                 }else{
-                    res.json({success: true, msg: 'Movie Created.'});
+                    return res.json({success: false, message : "Movie already in database"})
                 }
             })
-
-
         }
     })
 
