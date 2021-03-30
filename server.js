@@ -13,7 +13,7 @@ var cors = require('cors');
 var User = require('./Users');
 var Movie = require('./Movies');
 var Review = require('./reviews');
-
+var mongoose = require('mongoose');
 var rp = require('request-promise');
 const crypto = require('crypto');
 
@@ -71,15 +71,12 @@ router.route('/signup')
             user.username = req.body.username;
             user.password = req.body.password;
 
-            user.save(function (err) {
+            user.save(function (err, user) {
                 if (err) {
-                    if (err.code == 11000)
-                        return res.json({success: false, message: "A user with that username already exists"});
-                    else
-                        return res.json(err);
+                    return res.json({success: false, message: "A user with that username already exists"});
+                }else{
+                    return res.json({success: true, msg: 'Successfully created new user.', User : user});
                 }
-
-                return res.json({success: true, msg: 'Successfully created new user.'});
             });
         }
     })
@@ -113,6 +110,55 @@ router.route('/signin')
         })
     })
 
+router.route('/movies/:movie_title')
+    .get(authJwtController.isAuthenticated, function (req, res){
+        if(req.query && req.query.reviews && req.query.reviews === "true"){
+
+            Movie.findOne({title : req.params.movie_title}, function(err, movie) {
+                if (err) {
+                    return res.status(404).json({success: false, message: "Unable to find movie"});
+                } else if (!movie) {
+                    return res.status(403).json({success: false, message: "Movie Does Not Exist"})
+                } else {
+                    Movie.aggregate([
+                        {
+                            $match : {_id: mongoose.Types.ObjectId(movie._id)}
+                        },
+                        {
+                            $lookup: {
+                                from: "reviews",
+                                localField: "_id",
+                                foreignField: "movie_id",
+                                as: "MovieReview"
+                            }
+                        },
+                        {
+                            $addFields: {
+                                AverageReviews: {$avg: "$MovieReview.rating"}
+                            }
+                        }
+                    ]).exec(function (err, movie) {
+                        if (err) {
+                            return res.json(err);
+                        } else {
+                            return res.json(movie);
+                        }
+                    })
+                }
+            })
+        }else {
+            Movie.find({title: req.params.movie_title}).select("title year_released genre actors").exec(function (err, movie) {
+                if (err) {
+                    return res.status(404).json({success: false, message: "Unable to find movie"});
+                }else if (movie.length <= 0) {
+                    return res.status(403).json({success: false, message: "Movie Does Not Exist"});
+                }else {
+                    return res.status(200).json({success: true, message: "Found Movie", Movie: movie})
+                }
+            })
+        }
+    })
+
 router.route('/movies')
     .delete(authJwtController.isAuthenticated, function(req, res) {
         if(!req.body.title){
@@ -133,38 +179,35 @@ router.route('/movies')
     }
     )
     .put(authJwtController.isAuthenticated, function(req, res) {
-        if(!req.body.title || !req.body.update_title){
-            res.json({success:false, message: "Provide movie title to update, and new title"});
+        if(!req.body.title || !req.body){
+            res.json({success:false, message: "Provide movie title, and items to update"});
         }else{
             var filter = {title : req.body.title};
-            var update = {title : req.body.update_title};
-            Movie.findOneAndUpdate(filter, update, function(err, movie) {
+            var update = {title : req.body};
+            Movie.findOneAndUpdate({title : req.body.title}, req.body, function(err, movie) {
                 if(err){
                     return res.status(403).json({success:false, message: "Can not update Movie"});
                 }else if(!movie){
                     return res.status(403).json({success: false, message: "Can not find Movie"});
                 }else{
-                    return res.status(200).json({success: true, message:"Successfully updated title"});
+                    return res.status(200).json({success: true, message:"Successfully updated"});
                 }
             });
         }
     }
     )
     .get(authJwtController.isAuthenticated, function (req, res) {
-        if (!req.body.title){
-            res.json({success:false, message: "Provide a movie to display"});
-        }else{
-            Movie.find({title: req.body.title}).select("title year_released genre actors").exec(function(err, movie) {
+        Movie.find().select("title").exec(function(err, movie) {
                 if (err) {
                     return res.status(403).json({success: false, message: "Unable to find movie"});
                 }else if (movie) {
-                    return res.status(200).json({success: true, message: "Found Movie", Movie: movie})
+                    return res.status(200).json({success: true, message: "Found Movies", Movie: movie})
                 } else {
                     return res.status(404).json({success: false, message: "Movie not found"});
 
                 }
             })
-        }
+
     }
     )
     .post(authJwtController.isAuthenticated, function (req, res) {
@@ -182,12 +225,12 @@ router.route('/movies')
             Movie.find({title:req.body.title}, function(err, movies){
                 if(err){
                     return res.json(err);
-                }else if(!movies){
+                }else if(movies.length <= 0){
                     movie.save(function (err) {
                         if (err) {
                             return res.json(err);
                         }else{
-                            res.json({success: true, msg: 'Movie Created.'});
+                            res.json({success: true, msg: 'Movie Created.', Movie : movie});
                         }
                     })
                 }else{
@@ -210,81 +253,40 @@ router.route('/reviews')
 
             var review = new Review();
 
-            Movie.findOne({title: req.body.title}, function(err, movie){
-                if(err) {
-                    return res.status(403).json({success: false, message: "Can not Post Review"});
-                }else if(!movie){
-                    return res.status(403).json({success: false, message: "Movie Does Not exist"});
-                }else{
-                    review.title = req.body.title;
-                    review.username = req.body.username;
-                    review.comment = req.body.comment;
-                    review.rating = req.body.rating;
-
-                    review.save(function (err) {
-                        if (err) {
-                            return res.json(err);
-                        }else{
-                            trackDimension(movie.genre, 'Rating', 'Feedback for Movie', review.rating, review.title, "1");
-
-                            return res.json({success: true, message: "Review Saved"});
-                        }
-                    })
-                }
-            })
-        }
-    })
-    .get(function (req, res){
-        if(!req.body.title){
-            res.json({success: false, message: "Provide a movie to display"});
-        }else if(req.query.reviews == "true"){
-            Movie.findOne({title : req.body.title}, function(err, movie) {
-                if (err) {
-                    return res.status(404).json({success: false, message: "Unable to find movie"});
-                } else if (!movie) {
-                    return res.status(403).json({success: false, message: "Movie Does Not Exist"})
-                } else {
-                    Movie.aggregate([
-                        {
-                          $match : {title: req.body.title}
-                        },
-                        {
-                            $lookup: {
-                                from: "reviews",
-                                localField: "title",
-                                foreignField: "title",
-                                as: "MovieReview"
-                            }
-                        },
-                        {
-                            $addFields: {
-                                AverageReviews: {$avg: "$MovieReview.rating"}
-                            }
-                        }
-                    ]).exec(function (err, movie) {
-                        if (err) {
-                            return res.json(err);
-                        } else {
-                            return res.json(movie);
-                        }
-                    })
-                }
-            })
-
-        }
-        else {
-            Movie.find({title: req.body.title}).select("title year_released genre actors").exec(function (err, movie) {
-                if (err) {
-                    return res.status(404).json({success: false, message: "Unable to find movie"});
-                }else if (movie.length <= 0) {
-                        return res.status(403).json({success: false, message: "Movie Does Not Exist"});
+            //Retrieve the token from the authorization header
+            jwt.verify(req.headers.authorization.substring(4), process.env.SECRET_KEY, function(err, usr_id){
+                if(err){
+                    return res.status(403).json({success : false, message:  "Can not post review."});
                 }else {
-                    return res.status(200).json({success: true, message: "Found Movie", Movie: movie})
+                    review.user_id = usr_id.id;
+
+                    Movie.findOne({title: req.body.title}, function(err, movie){
+                        if(err) {
+                            return res.status(403).json({success: false, message: "Can not Post Review"});
+                        }else if(!movie){
+                            return res.status(403).json({success: false, message: "Movie Does Not exist"});
+                        }else{
+                            review.movie_id = movie._id;
+                            review.username = usr_id.username;
+                            review.comment = req.body.comment;
+                            review.rating = req.body.rating;
+
+                            review.save(function (err) {
+                                if (err) {
+                                    return res.json(err);
+                                }else{
+                                    trackDimension(movie.genre, 'Rating', 'Feedback for Movie', review.rating, review.title, "1");
+
+                                    return res.json({success: true, message: "Review Saved"});
+                                }
+                            })
+                        }
+                    })
                 }
             })
         }
-
     })
+
 
 router.all('/', function (req, res) {
     res.json({success: false, msg: 'This route is not supported.'});
