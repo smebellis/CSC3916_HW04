@@ -110,11 +110,11 @@ router.route('/signin')
         })
     })
 
-router.route('/movies/:movie_title')
+router.route('/movies/:movie.title')
     .get(authJwtController.isAuthenticated, function (req, res){
         if(req.query && req.query.reviews && req.query.reviews === "true"){
 
-            Movie.findOne({title : req.params.movie_title}, function(err, movie) {
+            Movie.findOne({title : req.params.movie.title}, function(err, movie) {
                 if (err) {
                     return res.status(404).json({success: false, message: "Unable to find movie"});
                 } else if (!movie) {
@@ -147,7 +147,7 @@ router.route('/movies/:movie_title')
                 }
             })
         }else {
-            Movie.find({title: req.params.movie_title}).select("title year_released genre actors").exec(function (err, movie) {
+            Movie.find({title: req.params.movie.title}).select("title year_released genre actors").exec(function (err, movie) {
                 if (err) {
                     return res.status(404).json({success: false, message: "Unable to find movie"});
                 }else if (movie.length <= 0) {
