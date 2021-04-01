@@ -220,19 +220,9 @@ router.route('/movies')
                     return res.json(movie);
                 }
             })
+        }else{
+            return res.status(403).json({success: false, message: "Unable to find movie"});
         }
-
-        Movie.find().select("title").exec(function(err, movie) {
-                if (err) {
-                    return res.status(403).json({success: false, message: "Unable to find movie"});
-                }else if (movie) {
-                    return res.status(200).json({success: true, message: "Found Movies", Movie: movie})
-                } else {
-                    return res.status(404).json({success: false, message: "Movie not found"});
-
-                }
-            })
-
     }
     )
     .post(authJwtController.isAuthenticated, function (req, res) {
