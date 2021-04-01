@@ -197,29 +197,41 @@ router.route('/movies')
     }
     )
     .get(authJwtController.isAuthenticated, function (req, res) {
-        if(req.query.reviews === "true"){
-            Movie.aggregate([
+        if (req.query && req.query.reviews && req.query.reviews === "true") {
 
-                {
-                    $lookup: {
-                        from: "reviews",
-                        localField: "_id",
-                        foreignField: "movie_id",
-                        as: "MovieReview"
-                    }
-                },
-                {
-                    $addFields: {
-                        AverageReviews: {$avg: "$MovieReview.rating"}
-                    }
-                }
-            ]).exec(function (err, movie) {
+            Movie.find(function (err, movies) {
                 if (err) {
-                    return res.json(err);
+                    return res.status(403).json({success: false, message: "Unable to get reviews for titles"});
+                } else if (!movies) {
+                    return res.status(403).json({success: false, message: "Unable to find titles"});
                 } else {
-                    return res.json(movie);
+                    Movie.aggregate([
+
+                        {
+                            $lookup: {
+                                from: "reviews",
+                                localField: "_id",
+                                foreignField: "movie_id",
+                                as: "MovieReview"
+                            }
+                        },
+                        {
+                            $addFields: {
+                                AverageReviews: {$avg: "$MovieReview.rating"}
+                            }
+                        }
+                    ]).exec(function (err, movie) {
+                        if (err) {
+                            return res.json(err);
+                        } else {
+                            return res.json(movie);
+                        }
+                    })
                 }
+
             })
+
+
         }else{
             return res.status(403).json({success: false, message: "Unable to find movie"});
         }
