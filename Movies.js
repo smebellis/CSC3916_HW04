@@ -20,7 +20,7 @@ var MovieSchema = new Schema({
 
     },
     year_released: {
-        type: String,
+        type: Number,
         required: "Year Released is required",
 
     },
