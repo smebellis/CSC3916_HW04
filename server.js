@@ -206,7 +206,7 @@ router.route('/movies')
                 } else if (!movies) {
                     return res.status(403).json({success: false, message: "Unable to find titles"});
                 } else {
-                    Movie.aggregate([
+                    Movie.aggregate(
 
                         {
                             $lookup: {
@@ -221,7 +221,7 @@ router.route('/movies')
                                 AverageReviews: {$avg: "$MovieReview.rating"}
                             }
                         }
-                    ]).exec(function (err, movie) {
+                    ).exec(function (err, movie) {
                         if (err) {
                             return res.json(err);
                         } else {
