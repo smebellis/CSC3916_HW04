@@ -120,7 +120,7 @@ router.route('/movies/:movie_title')
                 } else if (!movie) {
                     return res.status(403).json({success: false, message: "Movie Does Not Exist"})
                 } else {
-                    Movie.aggregate([
+                    Movie.aggregate(
                         {
                             $match : {_id: mongoose.Types.ObjectId(movie._id)}
                         },
@@ -137,7 +137,7 @@ router.route('/movies/:movie_title')
                                 AverageReviews: {$avg: "$MovieReview.rating"}
                             }
                         }
-                    ]).exec(function (err, movie) {
+                    ).exec(function (err, movie) {
                         if (err) {
                             return res.json(err);
                         } else {
