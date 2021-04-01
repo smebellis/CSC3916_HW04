@@ -206,17 +206,7 @@ router.route('/movies')
                 } else if (!movies) {
                     return res.status(403).json({success: false, message: "Unable to find titles"});
                 } else {
-                    Movie.aggregate()
-                        .lookup({from: "reviews", localField: "_id",foreignField: "movie_id",as: "MovieReview"})
-                        .addFields({AverageReviews: {$avg: "$MovieReview.rating"}})
-                        .exec(function (err, mov) {
-                            if (err) {
-                                return res.json(err);
-                            } else {
-                                return res.json({movie : mov});
-                            }
-                        })
-                        /*    
+                    Movie.aggregate([
                         {
                             $lookup: {
                                 from: "reviews",
@@ -230,13 +220,13 @@ router.route('/movies')
                                 AverageReviews: {$avg: "$MovieReview.rating"}
                             }
                         }
-                    ).exec(function (err, movie) {
+                    ]).exec(function (err, movie) {
                         if (err) {
                             return res.json(err);
                         } else {
                             return res.json(movie);
                         }
-                    })*/
+                    })
                 }
 
             })
