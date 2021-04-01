@@ -200,6 +200,7 @@ router.route('/movies')
         if (req.query && req.query.reviews && req.query.reviews === "true") {
 
             Movie.find(function (err, movies) {
+                console.log(movies);
                 if (err) {
                     return res.status(403).json({success: false, message: "Unable to get reviews for titles"});
                 } else if (!movies) {
