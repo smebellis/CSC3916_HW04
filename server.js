@@ -197,14 +197,14 @@ router.route('/movies')
     }
     )
     .get(authJwtController.isAuthenticated, function (req, res) {
-        if(req.query.reviews == "true"){
+        if(req.query.reviews === "true"){
             Movie.aggregate([
 
                 {
                     $lookup: {
                         from: "reviews",
-                        localField: "title",
-                        foreignField: "title",
+                        localField: "_id",
+                        foreignField: "movie_id",
                         as: "MovieReview"
                     }
                 },
