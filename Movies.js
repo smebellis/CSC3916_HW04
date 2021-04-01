@@ -29,6 +29,9 @@ var MovieSchema = new Schema({
         required: true,
         enum: ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Thriller", "Western"]
     },
+    imageUrl : { data: Buffer, type: String}
+    },
+    {
     actors:
         [
             {actor_name : {type : String, required : true}, character_name : {type : String, required :true}},
