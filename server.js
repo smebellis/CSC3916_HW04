@@ -199,9 +199,7 @@ router.route('/movies')
     .get(authJwtController.isAuthenticated, function (req, res) {
         if(req.query.reviews == "true"){
             Movie.aggregate([
-                {
-                    $match : {title: req.body.title}
-                },
+
                 {
                     $lookup: {
                         from: "reviews",
