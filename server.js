@@ -137,11 +137,11 @@ router.route('/movies/:movie_title')
                                 AverageReviews: {$avg: "$MovieReview.rating"}
                             }
                         }
-                    ]).exec(function (err, mov) {
+                    ]).exec(function (err, movie) {
                         if (err) {
                             return res.json(err);
                         } else {
-                            return res.json(mov);
+                            return res.json({movie});
                         }
                     })
                 }
@@ -224,7 +224,7 @@ router.route('/movies')
                         if (err) {
                             return res.json(err);
                         } else {
-                            return res.json(movie);
+                            return res.json({movie});
                         }
                     })
                 }
