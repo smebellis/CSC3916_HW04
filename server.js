@@ -114,12 +114,12 @@ router.route('/movies/:movie_title')
     .get(authJwtController.isAuthenticated, function (req, res){
         if(req.query && req.query.reviews && req.query.reviews === "true"){
 
-            /*Movie.findOne({title : req.params.movie_title}, function(err, movie) {
+            Movie.findOne({title : req.params.movie_title}, function(err, movie) {
                 if (err) {
                     return res.status(404).json({success: false, message: "Unable to find movie"});
                 } else if (!movie) {
                     return res.status(403).json({success: false, message: "Movie Does Not Exist"})
-                } else {*/
+                } else {
                     Movie.aggregate([
                         {
                             $match : {_id: mongoose.Types.ObjectId(movie._id)}
@@ -144,6 +144,8 @@ router.route('/movies/:movie_title')
                             return res.json({movie : movie});
                         }
                     })
+                }
+            })
                 
             
         }else {
