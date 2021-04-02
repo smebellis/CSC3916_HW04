@@ -141,7 +141,7 @@ router.route('/movies/:movie_title')
                         if (err) {
                             return res.json(err);
                         } else {
-                            return res.json({movie});
+                            return res.json({movie : movie});
                         }
                     })
                 }
@@ -224,7 +224,7 @@ router.route('/movies')
                         if (err) {
                             return res.json(err);
                         } else {
-                            return res.json({movie});
+                            return res.json({movie : movie});
                         }
                     })
                 }
