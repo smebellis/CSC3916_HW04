@@ -257,6 +257,7 @@ router.route('/movies')
             movie.title = req.body.title;
             movie.year_released = req.body.year_released;
             movie.genre = req.body.genre;
+            movie.imageUrl = req.body.imageUrl;
             movie.actors = req.body.actors;
 
             Movie.find({title:req.body.title}, function(err, movies){
