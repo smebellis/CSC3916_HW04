@@ -29,11 +29,11 @@ var ReviewSchema = new Schema({
     },
     comment: {
         type: String,
-        require: "A comment is required",
+        required: true,
     },
     rating: {
         type : Number,
-        required : "A rating is required",
+        required : true,
         min : 1,
         max : 5
     }

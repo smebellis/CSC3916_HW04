@@ -233,7 +233,15 @@ router.route('/movies')
 
 
         }else{
-            return res.status(403).json({success: false, message: "Unable to find movie"});
+            Movie.find(function(err, movies){
+                if(err){
+                    res.send(err);
+                }else{
+                    return res.json(movies).status(200).end();
+                }
+
+            })
+            //return res.status(403).json({success: false, message: "Unable to find movie"});
         }
     }
     )
