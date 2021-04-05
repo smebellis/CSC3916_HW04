@@ -285,7 +285,7 @@ router.route('/movies')
 
 router.route('/reviews')
     .post(authJwtController.isAuthenticated, function (req, res) {
-        if(!req.body.title || !req.body.username || !req.body.comment || !req.body.rating){
+        if(!req.body.title || !req.body.comment || !req.body.rating){
             return res.json({success: false, message : "Movie Title, Username, Comment, and Rating Required"});
         }else{
 

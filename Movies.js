@@ -31,7 +31,7 @@ var MovieSchema = new Schema({
     },
     imageUrl : {
         type: String,
-        required : false,
+        required : false
     },
 
     actors:
