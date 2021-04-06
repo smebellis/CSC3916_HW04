@@ -137,6 +137,7 @@ router.route('/movies/:movie_title')
                                 AverageReviews: {$avg: "$MovieReview.rating"}
                             }
                         }
+                        
                     ]).exec(function (err, movie) {
                         if (err) {
                             return res.json(err);
@@ -221,6 +222,9 @@ router.route('/movies')
                             $addFields: {
                                 AverageReviews: {$avg: "$MovieReview.rating"}
                             }
+                        },
+                        {
+                            $sort: {AverageReviews : -1}
                         }
                     ]).exec(function (err, movie) {
                         if (err) {
