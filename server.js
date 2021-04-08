@@ -109,7 +109,29 @@ router.route('/signin')
             })
         })
     })
+router.route('/search/:search_term')
+    .get(authJwtController.isAuthenticated, function(req, res){
 
+        var searchKey = new RegExp(reg.params.search_term, 'i')
+
+        Movie.find({title : searchKey}, function(err, search){
+            if(err){
+                return res.status(403).json({success: false, message : "Unable to locate movie"});
+            }else if (search > 0) {
+                return res.status(200).json({
+                    success : true,
+                    message : "Successfully retrieved movie",
+                    movie : search
+                })
+            }else {
+                return res.status(404).json({
+                    success : false,
+                    message : "Movie not found"
+                })
+            }            
+        })
+    })
+            
 router.route('/movies/:movie_title')
     .get(authJwtController.isAuthenticated, function (req, res){
         if(req.query && req.query.reviews && req.query.reviews === "true"){
@@ -161,6 +183,8 @@ router.route('/movies/:movie_title')
             })
         }
     })
+
+
 
 router.route('/movies')
     .delete(authJwtController.isAuthenticated, function(req, res) {
