@@ -4,6 +4,7 @@ File: Server.js
 Description: Web API scaffolding for Movie API
  */
 
+require('dotenv').config({path: '/.env'})
 var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
@@ -109,15 +110,18 @@ router.route('/signin')
             })
         })
     })
+
 router.route('/search/:search_term')
     .get(authJwtController.isAuthenticated, function(req, res){
 
-        var searchKey = new RegExp(reg.params.search_term, 'i')
-
+        var searchKey = new RegExp(req.params.search_term, 'i')
+        console.log('params', req.params);
+        console.log('searh key', searchKey);
         Movie.find({title : searchKey}, function(err, search){
             if(err){
                 return res.status(403).json({success: false, message : "Unable to locate movie"});
-            }else if (search > 0) {
+            }
+            if (search && search.length > 0) {
                 return res.status(200).json({
                     success : true,
                     message : "Successfully retrieved movie",
